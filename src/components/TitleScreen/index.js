@@ -21,6 +21,7 @@ const TitleScreenTitle = styled.h1`
   font-family: OptimusPrinceps;
   font-size: 6rem;
   font-weight: bold;
+  text-shadow: 2px 2px 8px rgba(255, 254, 12, 0.4);
 `;
 
 const TitleScreenSubtitle = styled.h1`
