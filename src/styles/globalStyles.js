@@ -1,11 +1,12 @@
 import { createGlobalStyle } from 'styled-components'
+import pageStyles from './base/page';
+import resetStyles from './base/reset';
+import fontStyles from './base/fonts';
+import animationStyles from './base/animations';
 
 export const GlobalStyles = createGlobalStyle`
-  html {
-    font-size: 14px;
-  }
-  body {
-    background-color: #000;
-    color: #fff;
-  }
+  ${resetStyles}
+  ${pageStyles}
+  ${fontStyles}
+  ${animationStyles}
 `;
