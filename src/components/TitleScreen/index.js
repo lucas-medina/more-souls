@@ -1,8 +1,21 @@
 import React, { Component } from 'react'
-import styled from 'styled-components'
-import { TweenLite } from 'gsap/all'
+import styled, { keyframes } from 'styled-components'
+import Genius from '../../lib/Genius';
+import soulEngineStatus from '../../state/store/storeSoulEngineStatus'
+import { connect } from 'react-redux'
+import { changeStatusToTitlescreen } from '../../state/actions/actionSoulEngineStatus';
 
-
+const AnimationTitle = keyframes`
+  0% {
+    transform: scale(1.1);
+    filter: blur(4px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    filter: blur(0px);
+  }
+`;
 const BlockTitleScreen = styled.div`
   width: 100%;
   height: 100vh;
@@ -14,7 +27,7 @@ const BlockTitleScreen = styled.div`
 
 const TitleScreenWrapper = styled.div`
   text-align: center;
-  animation: titleShowUp 2.5s ease-out 0s 1 backwards;
+  animation: ${AnimationTitle} 2.5s ease-out 0s 1 backwards;
 `;
 
 const TitleScreenTitle = styled.h1`
@@ -45,7 +58,7 @@ const TitleScreenButton = styled.button`
   }
 `;
 
-export default class TitleScreen extends Component {
+class TitleScreen extends Component {
 
   constructor(props) {
     super(props);
@@ -53,21 +66,35 @@ export default class TitleScreen extends Component {
   }
 
   state = {
-    titleSize: 'inherit'
+    frameSize: Genius.percentage(window.innerWidth, 80),
+    titleSize: 40
   }
 
   componentDidMount() {
-    this.getTitleFontSize();
+    this.initFrameSizeTitle();
+    window.addEventListener('resize', this.adaptTitleOnResize);
+    this.props.changeStatusToTitlescreen();
   }
 
-  getTitleFontSize = () => {
-    console.log(this.elTitle);
-    let currentFontSize = parseInt(window.getComputedStyle(this.elTitle).fontSize);
-    let currentTitleSize = this.elTitle.getBoundingClientRect().width;
-    let reason = window.innerWidth / currentTitleSize;
-    let newFontSize = currentFontSize * reason;
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.adaptTitleOnResize);
+  }
+
+  initFrameSizeTitle = () => {
+    let { frameSize, titleSize } = this.state;
+    let elWidth = this.elTitle.getBoundingClientRect().width;
+    let titleReason = frameSize / elWidth;
+    let newTitleSize = titleSize * titleReason;
+    this.setState({ titleSize: newTitleSize });
+  }
+
+  adaptTitleOnResize = () => {
+    const { frameSize, titleSize } = this.state;
+    let newFrameSize = Genius.percentage(window.innerWidth, 80);
     
-    this.setState({ titleSize: newFontSize })
+    let frameReason = newFrameSize / frameSize;
+    let newTitleSize = titleSize * frameReason;
+    this.setState({ titleSize: newTitleSize, frameSize: newFrameSize });
   }
 
   gameStart = () => {
@@ -75,17 +102,30 @@ export default class TitleScreen extends Component {
   }
 
   render() {
-    const { title, subtitle } = this.props;
+    const { title, subtitle, soulEngineStatus } = this.props;
+    const { titleSize } = this.state;
     return (
       <BlockTitleScreen>
         <TitleScreenWrapper>
           <TitleScreenTitle>
-            <span style={{ fontSize: this.state.titleSize }} ref={el => this.elTitle = el}>{title || 'More souls'}</span>
+            <span style={{ fontSize: this.state.titleSize }} ref={el => this.elTitle = el}>
+              {title || 'More souls'}
+            </span>
           </TitleScreenTitle>
-          <TitleScreenSubtitle style={{ fontSize: this.state.titleSize / 3 }}>{subtitle || 'Prepare to click'}</TitleScreenSubtitle>
+          <TitleScreenSubtitle style={{ fontSize: titleSize === null ? 20 : titleSize / 3 }}>
+            {subtitle || 'Prepare to click'}
+          </TitleScreenSubtitle>
         </TitleScreenWrapper>
-        <TitleScreenButton onClick={this.gameStart}>Begin</TitleScreenButton>
+        { 
+          soulEngineStatus === 'titlescreen' 
+          ? <TitleScreenButton onClick={this.gameStart}>Begin</TitleScreenButton>
+          : null
+        }
       </BlockTitleScreen>
     )
   }
 }
+
+const mapStateToProps = ({ soulEngineStatus }) => ({ soulEngineStatus });
+
+export default connect(mapStateToProps, { changeStatusToTitlescreen })(TitleScreen)

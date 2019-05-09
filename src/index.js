@@ -1,19 +1,21 @@
 import React from 'react'
 import ReactDOM from 'react-dom';
-
-import { GlobalStyles } from './styles/globalStyles';
-import TitleScreen from './components/TitleScreen';
+import { Provider } from 'react-redux'
+import { createStore } from 'redux'
+import { GlobalStyles } from './styles/globalStyles'
+import store from './state/store'
+import AppContainer from './components/AppContainer';
 
 export default function App() {
   return (
     <>
       <GlobalStyles />
-      <div>
-        <TitleScreen title="a1mwkq424" subtitle="2248775929958421300" />
-      </div>
+      <AppContainer />
     </>
   )
 }
 
-
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(
+  <Provider store={createStore(store, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())}>
+    <App />
+  </Provider>, document.getElementById('root'));
